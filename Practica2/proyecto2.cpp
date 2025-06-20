@@ -25,8 +25,7 @@ void agregarProducto() {
     
     do {
         codigoRepetido = false;
-        cout << "Codigo: ";
-        cin >> nuevo.codigo;
+        cout << "Codigo: "; cin >> nuevo.codigo;
         cin.ignore();
 
         ifstream file(archivo, ios::binary);
@@ -41,15 +40,11 @@ void agregarProducto() {
         file.close();
     } while(codigoRepetido);
 
-    cout << "Nombre: ";
-    cin.getline(nuevo.nombre, 30);
-    cout << "Precio: ";
-    cin >> nuevo.precio;
-    cout << "Stock: ";
-    cin >> nuevo.stock;
+    cout << "Nombre: "; cin.getline(nuevo.nombre, 30);
+    cout << "Precio: "; cin >> nuevo.precio;
+    cout << "Stock: "; cin >> nuevo.stock;
     cin.ignore();
-    cout << "Categoria: ";
-    cin.getline(nuevo.categoria, 20);
+    cout << "Categoria: "; cin.getline(nuevo.categoria, 30);
 
     nuevo.activo = true;
     ofstream out(archivo, ios::binary | ios::app);
@@ -127,21 +122,114 @@ void buscarPorCodigo() {
     if(!encontrado) cout << "Producto no encontrado\n";
 }
 
+void modificarProducto() {
+    int codigo;
+    cout << "Codigo a modificar: "; cin >> codigo;
+    cin.ignore();
+
+    fstream file(archivo, ios::binary | ios::in | ios::out);
+    if(!file) {
+        cout << "Error al abrir archivo\n";
+        return;
+    }
+    Producto p;
+    bool encontrado = false;
+    streampos pos;
+
+    while(file.read((char*)&p, sizeof(Producto))) {
+        if(p.codigo == codigo && p.activo) {
+            encontrado = true;
+            pos = file.tellg();
+            pos -= sizeof(Producto);
+            break;
+        }
+    }
+    if(!encontrado) {
+        cout << "Producto no encontrado\n";
+        file.close();
+        return;
+    }
+    cout << "\n1. Nombre: " << p.nombre
+         << "\n2. Precio: " << p.precio
+         << "\n3. Stock: " << p.stock
+         << "\n4. Categoria: " << p.categoria
+         << "\nQue desea modificar? (1-4): ";
+    
+    int opcion;
+    cin >> opcion;
+    cin.ignore();
+
+    switch(opcion) {
+        case 1: cout << "Nuevo nombre: "; cin.getline(p.nombre, 30); break;
+        case 2: cout << "Nuevo precio: "; cin >> p.precio;
+            cin.ignore();
+            break;
+        case 3: cout << "Nuevo stock: "; cin >> p.stock;
+            cin.ignore();
+            break;
+        case 4: cout << "Nueva categoria: "; cin.getline(p.categoria, 30);
+            break;
+        default: cout << "Opcion no valida\n";
+            file.close();
+            return;
+    }
+    file.seekp(pos);
+    file.write((char*)&p, sizeof(Producto));
+    file.close();
+    
+    cout << "Producto modificado!\n";
+}
+
+void eliminarProducto() {
+    int codigo;
+    cout << "Codigo a eliminar: "; cin >> codigo;
+    cin.ignore();
+
+    fstream file(archivo, ios::binary | ios::in | ios::out);
+    if(!file) {
+        cout << "Error al abrir archivo\n";
+        return;
+    }
+    Producto p;
+    bool encontrado = false;
+    streampos pos;
+
+    while(file.read((char*)&p, sizeof(Producto))) {
+        if(p.codigo == codigo && p.activo) {
+            encontrado = true;
+            pos = file.tellg();
+            pos -= sizeof(Producto);
+            break;
+        }
+    }
+    if(!encontrado) {
+        cout << "Producto no encontrado\n";
+        file.close();
+        return;
+    }
+    p.activo = false;
+    file.seekp(pos);
+    file.write((char*)&p, sizeof(Producto));
+    file.close();
+    
+    cout << "Producto eliminado!\n";
+}
+
 int main() {
     inicializar();
     int opcion;
 
     do {
         cout << "1. Agregar\n"
-        << "2. Mostrar todos\n"
-        << "3. Buscar por categoria\n"
-        << "4. Buscar por codigo\n"
-        << "5. Modificar\n"
-        << "6. Eliminar\n"
-        << "7. Salir\n"
-        << "Opcion: ";
-    cin >> opcion;
-    cin.ignore();
+            << "2. Mostrar todos\n"
+            << "3. Buscar por categoria\n"
+            << "4. Buscar por codigo\n"
+            << "5. Modificar\n"
+            << "6. Eliminar\n"
+            << "7. Salir\n"
+            << "Opcion: ";
+        cin >> opcion;
+        cin.ignore();
 
         switch(opcion) {
             case 1: agregarProducto(); break;
@@ -153,7 +241,6 @@ int main() {
             case 7: cout << "Saliendo...\n"; break;
             default: cout << "Opcion no valida\n";
         }
-
     } while(opcion != 7);
     return 0;
 }
