@@ -59,6 +59,74 @@ void agregarProducto() {
     cout << "Producto agregado!\n";
 }
 
+void mostrarTodos() {
+    ifstream file(archivo, ios::binary);
+    if(!file) {
+        cout << "No hay productos\n";
+        return;
+    }
+    Producto p;
+    bool hayProductos = false;
+    
+    cout << "\nLista de productos\n";
+    while(file.read((char*)&p, sizeof(Producto))) {
+        if(p.activo) {
+            hayProductos = true;
+            cout << p.codigo << " | " << p.nombre << " | $" << p.precio << " | Stock: " << p.stock << " | " << p.categoria << "\n";
+        }
+    }
+    file.close();
+    if(!hayProductos) cout << "No hay productos activos\n";
+}
+
+void mostrarPorCategoria() {
+    string categoria;
+    cout << "Categoria a buscar: "; getline(cin, categoria);
+
+    ifstream file(archivo, ios::binary);
+    if(!file) {
+        cout << "Error al abrir archivo\n";
+        return;
+    }
+
+    Producto p;
+    bool encontrados = false;
+    
+    cout << "\nProductos en " << categoria << ":\n";
+    while(file.read((char*)&p, sizeof(Producto))) {
+        if(p.activo && string(p.categoria) == categoria) {
+            encontrados = true;
+            cout << p.codigo << " | " << p.nombre << " | $" << p.precio << " | Stock: " << p.stock << "\n";
+        }
+    }
+    file.close();
+    if(!encontrados) cout << "No hay productos en esta categoria\n";
+}
+
+void buscarPorCodigo() {
+    int codigo;
+    cout << "Codigo a buscar: "; cin >> codigo;
+    cin.ignore();
+
+    ifstream file(archivo, ios::binary);
+    if(!file) {
+        cout << "Error al abrir archivo\n";
+        return;
+    }
+    Producto p;
+    bool encontrado = false;
+    
+    while(file.read((char*)&p, sizeof(Producto))) {
+        if(p.codigo == codigo && p.activo) {
+            encontrado = true;
+            cout << "\nCodigo: " << p.codigo << "\nNombre: " << p.nombre << "\nPrecio: $" << p.precio << "\nStock: " << p.stock << "\nCategoria: " << p.categoria << "\n";
+            break;
+        }
+    }
+    file.close();
+    if(!encontrado) cout << "Producto no encontrado\n";
+}
+
 int main() {
     inicializar();
     int opcion;
